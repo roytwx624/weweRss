@@ -8,17 +8,36 @@ process.env.SERVER_ORIGIN_URL = process.env.SERVER_ORIGIN_URL || DEFAULT_SERVER_
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
-const url = require('url');
 const port = process.env.PORT || 3000;
 
 console.log('=== Vercel Server ===');
 console.log('SERVER_ORIGIN_URL:', process.env.SERVER_ORIGIN_URL);
+console.log('__dirname:', __dirname);
 
-const clientDir = path.join(__dirname, 'apps', 'server', 'client');
+// Try multiple possible locations for client files
+function findClientDir() {
+  const possiblePaths = [
+    path.join(__dirname, 'apps', 'server', 'client'),
+    path.join(__dirname, '..', 'apps', 'server', 'client'),
+    path.join(__dirname, '.output', 'client'),
+  ];
+  
+  for (const p of possiblePaths) {
+    console.log('Checking:', p, fs.existsSync(p));
+    if (fs.existsSync(p)) {
+      return p;
+    }
+  }
+  return possiblePaths[0];
+}
+
+const clientDir = findClientDir();
 const assetsDir = path.join(clientDir, 'assets');
 const indexPath = path.join(clientDir, 'index.hbs');
 
 console.log('clientDir:', clientDir);
+console.log('assetsDir:', assetsDir);
+console.log('indexPath:', indexPath);
 
 function createTrpcResponse() {
   return JSON.stringify({
@@ -60,6 +79,8 @@ const server = http.createServer((req, res) => {
     const fileName = req.url.replace('/dash/assets/', '');
     const filePath = path.join(assetsDir, fileName);
     
+    console.log('Looking for asset:', filePath);
+    
     if (fs.existsSync(filePath)) {
       const data = fs.readFileSync(filePath);
       if (filePath.endsWith('.css')) {
@@ -70,15 +91,22 @@ const server = http.createServer((req, res) => {
       res.statusCode = 200;
       res.end(data);
       return;
+    } else {
+      console.log('Asset not found:', filePath);
+      res.statusCode = 404;
+      res.end('Asset not found');
+      return;
     }
   }
 
   // Handle dashboard
-  if (req.url === '/dash' || req.url.startsWith('/dash/')) {
+  if (req.url === '/dash' || req.url.startsWith('/dash')) {
+    console.log('Looking for index:', indexPath);
+    console.log('Exists:', fs.existsSync(indexPath));
+    
     if (fs.existsSync(indexPath)) {
       let html = fs.readFileSync(indexPath, 'utf8');
       
-      // Replace template variables with actual values
       html = html
         .replace('{{ weweRssServerOriginUrl }}', process.env.SERVER_ORIGIN_URL)
         .replace('{{ enabledAuthCode }}', 'true')
@@ -87,6 +115,12 @@ const server = http.createServer((req, res) => {
       res.statusCode = 200;
       res.setHeader('Content-Type', 'text/html');
       res.end(html);
+      return;
+    } else {
+      // Show what files exist
+      console.log('Files in parent:', fs.readdirSync(__dirname));
+      res.statusCode = 500;
+      res.end('Client directory not found. Build may have failed.');
       return;
     }
   }
