@@ -2,11 +2,27 @@
   "version": 2,
   "builds": [
     {
+      "src": "apps/server/client/**/*",
+      "use": "@vercel/static"
+    },
+    {
       "src": "index.js",
       "use": "@vercel/node"
     }
   ],
   "routes": [
+    {
+      "src": "/dash/assets/(.*)",
+      "dest": "apps/server/client/assets/$1"
+    },
+    {
+      "src": "/dash",
+      "dest": "apps/server/client/index.hbs"
+    },
+    {
+      "src": "/dash/(.*)",
+      "dest": "apps/server/client/index.hbs"
+    },
     {
       "src": "/(.*)",
       "dest": "/index.js"
