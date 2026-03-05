@@ -1,0 +1,25 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "vercel.js",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/vercel.js"
+    }
+  ],
+  "env": {
+    "NODE_ENV": "production",
+    "DATABASE_TYPE": "sqlite",
+    "AUTH_CODE": "daduhuizhan",
+    "DATABASE_URL": "file::memory:",
+    "PORT": "3000",
+    "SERVER_ORIGIN_URL": "https://wewe-rss-livid.vercel.app"
+  },
+  "installCommand": "npx pnpm install",
+  "buildCommand": "npx pnpm build:web"
+}
