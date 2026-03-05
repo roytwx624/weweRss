@@ -26,7 +26,10 @@ function createTrpcResponse() {
     id: Math.random().toString(36).substr(2, 9),
     result: {
       data: {
-        json: null
+        json: {
+          items: [],
+          nextId: null
+        }
       }
     }
   });
