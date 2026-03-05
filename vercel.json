@@ -2,11 +2,27 @@
   "version": 2,
   "builds": [
     {
+      "src": "apps/server/client/**/*",
+      "use": "@vercel/static"
+    },
+    {
       "src": "index.js",
       "use": "@vercel/node"
     }
   ],
   "routes": [
+    {
+      "src": "/dash/assets/(.*)",
+      "dest": "apps/server/client/assets/$1"
+    },
+    {
+      "src": "/dash",
+      "dest": "apps/server/client/index.hbs"
+    },
+    {
+      "src": "/dash/(.*)",
+      "dest": "apps/server/client/index.hbs"
+    },
     {
       "src": "/(.*)",
       "dest": "/index.js"
@@ -20,6 +36,6 @@
     "PORT": "3000",
     "SERVER_ORIGIN_URL": "https://wewe-rss-livid.vercel.app"
   },
-  "installCommand": "npx pnpm install",
-  "buildCommand": "npx pnpm build:web && npx pnpm build:server"
+  "installCommand": "npm install",
+  "buildCommand": "npm run build:web && npm run build:server"
 }
